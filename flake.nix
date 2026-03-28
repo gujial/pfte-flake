@@ -13,6 +13,12 @@
           inherit system;
           config.allowUnfree = true;
         };
+        pfteFontsConf = pkgs.makeFontsConf {
+          fontDirectories = [
+            pkgs.dejavu_fonts
+            pkgs.noto-fonts
+          ];
+        };
       in {
         packages.default = pkgs.stdenvNoCC.mkDerivation rec {
           pname = "pfte";
@@ -25,6 +31,39 @@
 
           nativeBuildInputs = [
             pkgs.dpkg
+            pkgs.autoPatchelfHook
+            pkgs.makeWrapper
+          ];
+
+          buildInputs = [
+            pkgs.stdenv.cc.cc.lib
+            pkgs.zlib
+            pkgs.expat
+            pkgs.alsa-lib
+            pkgs.cups
+            pkgs.dbus
+            pkgs.nss
+            pkgs.nspr
+            pkgs.glib
+            pkgs.gtk3
+            pkgs.pango
+            pkgs.cairo
+            pkgs.freetype
+            pkgs.fontconfig
+            pkgs.dejavu_fonts
+            pkgs.noto-fonts
+            pkgs.libglvnd
+            pkgs.libx11
+            pkgs.libxext
+            pkgs.libxi
+            pkgs.libxrender
+            pkgs.libxtst
+            pkgs.libxt
+            pkgs.libxrandr
+            pkgs.libxcursor
+            pkgs.libxfixes
+            pkgs.libxinerama
+            pkgs.libxcb
           ];
 
           dontUnpack = true;
@@ -38,6 +77,7 @@
             cp -a "$TMPDIR/deb"/. "$out"/
 
             mkdir -p "$out/bin"
+            real_pfte=""
 
             # Try common install locations for the upstream binary.
             for candidate in \
@@ -48,18 +88,55 @@
               "$out/usr/bin/pfte"
             do
               if [ -x "$candidate" ]; then
-                ln -s "$candidate" "$out/bin/pfte"
+                real_pfte="$candidate"
                 break
               fi
             done
 
             # Fallback: locate any executable named like pfte.
-            if [ ! -e "$out/bin/pfte" ]; then
+            if [ -z "$real_pfte" ]; then
               candidate="$(find "$out" -type f -perm -0100 | grep -Ei '/(pfte|PFTE)$' | head -n1 || true)"
               if [ -n "$candidate" ]; then
-                ln -s "$candidate" "$out/bin/pfte"
+                real_pfte="$candidate"
               fi
             fi
+
+            if [ -z "$real_pfte" ]; then
+              echo "Could not find PFTE executable in extracted deb payload" >&2
+              exit 1
+            fi
+
+            makeWrapper "$real_pfte" "$out/bin/pfte" \
+              --prefix LD_LIBRARY_PATH : "${pkgs.lib.makeLibraryPath [
+                pkgs.stdenv.cc.cc.lib
+                pkgs.zlib
+                pkgs.expat
+                pkgs.alsa-lib
+                pkgs.cups
+                pkgs.dbus
+                pkgs.nss
+                pkgs.nspr
+                pkgs.glib
+                pkgs.gtk3
+                pkgs.pango
+                pkgs.cairo
+                pkgs.freetype
+                pkgs.fontconfig
+                pkgs.libglvnd
+                pkgs.libx11
+                pkgs.libxext
+                pkgs.libxi
+                pkgs.libxrender
+                pkgs.libxtst
+                pkgs.libxt
+                pkgs.libxrandr
+                pkgs.libxcursor
+                pkgs.libxfixes
+                pkgs.libxinerama
+                pkgs.libxcb
+              ]}" \
+              --set FONTCONFIG_FILE "${pfteFontsConf}" \
+              --set JAVA_FONTS "${pkgs.dejavu_fonts}/share/fonts/truetype:${pkgs.noto-fonts}/share/fonts"
 
             mkdir -p "$out/share/applications"
             cat > "$out/share/applications/pfte.desktop" <<EOF
