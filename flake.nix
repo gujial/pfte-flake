@@ -41,6 +41,7 @@
 
             # Try common install locations for the upstream binary.
             for candidate in \
+              "$out/opt/pfte/bin/Paranoia File and Text Encryption" \
               "$out/opt/pfte/pfte" \
               "$out/opt/PFTE/pfte" \
               "$out/opt/PFTE/PFTE" \
