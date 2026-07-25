@@ -32,8 +32,8 @@
           version = "16.2.43";
 
           src = pkgs.fetchurl {
-            url = "https://paranoiaworks.com/download/pfte_16.2.43-1_amd64.deb";
-            sha256 = "sha256-VIRiwf17lOUaMpOHHecX0WF71i1ZdU5zHj/GGcmxVqo=";
+            url = "https://paranoiaworks.com/download/pfte_17.0.43-1_amd64.deb";
+            sha256 = "sha256-V/SJ1Dl8Zg5tbFJauba7xs6i0V+Kk/4nKsCYgnZGX7k=";
           };
 
           nativeBuildInputs = [
