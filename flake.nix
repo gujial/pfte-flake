@@ -4,6 +4,10 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
+    pfte = {
+      url = "file+https://paranoiaworks.com/download/pfte_17.3.43-1_amd64.deb";
+      flake = false;
+    };
   };
 
   outputs =
@@ -11,6 +15,7 @@
       self,
       nixpkgs,
       flake-utils,
+      pfte,
     }:
     flake-utils.lib.eachDefaultSystem (
       system:
@@ -29,12 +34,9 @@
       {
         packages.default = pkgs.stdenvNoCC.mkDerivation {
           pname = "pfte";
-          version = "16.2.43";
+          version = "17.3.43";
 
-          src = pkgs.fetchurl {
-            url = "https://paranoiaworks.com/download/pfte_17.0.43-1_amd64.deb";
-            sha256 = "sha256-V/SJ1Dl8Zg5tbFJauba7xs6i0V+Kk/4nKsCYgnZGX7k=";
-          };
+          src = pfte;
 
           nativeBuildInputs = [
             pkgs.dpkg
@@ -172,7 +174,7 @@
 
           meta = with pkgs.lib; {
             description = "Paranoia File and Text Encryption (packaged from .deb)";
-            homepage = "https://paranoiaworks.mobi/encrypted-text.php";
+            homepage = "https://paranoiaworks.mobi/pfte/";
             platforms = platforms.linux;
             sourceProvenance = [ sourceTypes.binaryNativeCode ];
             license = licenses.unfree;
